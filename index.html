@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Donate Page</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Include Razorpay's magic-checkout.js -->
+    <script src="https://checkout.razorpay.com/v1/magic-checkout.js"></script>
+</head>
+<body>
+    <h1>Donate Now</h1>
+    <div class="donation-form">
+        <label for="donationAmount">Enter the amount you would like to donate:</label>
+        <input type="number" id="donationAmount" placeholder="Enter amount">
+        <button onclick="openDonationPopup()">Donate Now</button>
+    </div>
+
+    <script>
+        // Function to load environment variables
+        function loadEnvVars() {
+            fetch('.env')
+                .then(response => response.text())
+                .then(text => {
+                    const envVars = text.split('\n');
+                    for (const envVar of envVars) {
+                        const [key, value] = envVar.split('=');
+                        if (key.trim() === 'RAZORPAY_KEY') {
+                            window.RAZORPAY_KEY = value.trim();
+                        }
+                    }
+                });
+        }
+
+        function openDonationPopup() {
+            var amount = document.getElementById("donationAmount").value;
+            if (isNaN(amount) || amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+
+            // Check if Razorpay key is loaded
+            if (!window.RAZORPAY_KEY) {
+                alert("Razorpay key not found. Please try again later.");
+                return;
+            }
+
+            var options = {
+                key: window.RAZORPAY_KEY,
+                amount: amount * 100,
+                currency: 'INR',
+                name: 'Your Donation',
+                description: 'Donation for?',
+                image: 'https://example.com/your_logo.png',
+                handler: function (response) {
+                    alert('Payment successful!');
+                    console.log(response);
+                },
+                prefill: {
+                    name: 'Literally Anybody',
+                    email: 'somebody@example.com'
+                }
+            };
+
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        }
+
+        // Load environment variables when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEnvVars();
+        });
+    </script>
+</body>
+</html>
